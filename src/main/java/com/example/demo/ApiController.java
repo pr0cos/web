@@ -12,7 +12,16 @@ import java.util.List;
 public class ApiController {
     private final List<String> messages = new ArrayList<>();
     @GetMapping("messages") //curl --get localhost:8080/messages
-    public ResponseEntity<List<String>> getMessages() {
+    public ResponseEntity<List<String>> getMessages(@RequestBody(required = false) String text) {
+        List<String> to_return = new ArrayList<>();
+        if(text != null) {
+            for (String message : messages) {
+                if (message.startsWith(text)) {
+                    to_return.add(message);
+                }
+            }
+            return ResponseEntity.ok(to_return);
+        }
         return ResponseEntity.ok(messages);
     }
     @PostMapping("messages") //curl -H "Content-Type: text/plain" -d hello localhost:8080/messages
@@ -37,6 +46,37 @@ public class ApiController {
             @RequestBody String message) {
         messages.remove((int) i);
         messages.add(i, message);
+        return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("messages/search/{text}") //curl --get localhost:8080/messages/search/hello
+    public ResponseEntity<Integer> searchMessage(@PathVariable String text){
+        for(int i = 0; i < messages.size(); i++){
+            if(messages.get(i).contains(text)){
+                return ResponseEntity.ok(i);
+            }
+        }
+        return ResponseEntity.ok(-1);
+    }
+
+    @GetMapping("messages/count") //curl --get localhost:8080/messages/count
+    public ResponseEntity<Integer> countMessages(){
+        return ResponseEntity.ok(messages.size());
+    }
+
+    @PostMapping("messages/{index}/create") //curl -H "Content-Type: text/plain" -d hello localhost:8080/messages/1/create
+    public ResponseEntity<Void> createMessage(@RequestBody String message, @PathVariable("index") Integer i){
+        messages.add(i, message);
+        return ResponseEntity.accepted().build();
+    }
+
+    @DeleteMapping("messages/search/{text}") //curl -X DELETE localhost:8080/messages/search/hello
+    public ResponseEntity<Void> deleteMessage(@PathVariable String text){
+        for(int i = messages.size() - 1; i >= 0; i--){
+            if(messages.get(i).contains(text)){
+                messages.remove(i);
+            }
+        }
         return ResponseEntity.accepted().build();
     }
 }
