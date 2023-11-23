@@ -11,6 +11,7 @@ import java.util.List;
 @RestController
 public class ApiController {
     private final List<String> messages = new ArrayList<>();
+    private final List<User> users = new ArrayList<>();
     @GetMapping("messages") //curl --get localhost:8080/messages
     public ResponseEntity<List<String>> getMessages(@RequestBody(required = false) String text) {
         List<String> to_return = new ArrayList<>();
@@ -77,6 +78,34 @@ public class ApiController {
                 messages.remove(i);
             }
         }
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("users") //curl -X POST localhost:8080/users -H "Content-Type: application/json" -d "{\"name\": \"Fedor\", \"age\": \"23\"}"
+    public ResponseEntity<Void> addUser(@RequestBody User user){
+        users.add(user);
+        return ResponseEntity.accepted().build();
+    }
+
+    @DeleteMapping("users/{index}") //curl -X DELETE localhost:8080/users/1
+    public ResponseEntity<Void> deleteUser(@PathVariable("index") Integer index){
+        users.remove((int) index);
+        return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("users/{index}") //curl localhost:8080/users/1
+    public ResponseEntity<User> getUser(@PathVariable("index") Integer index){
+        return ResponseEntity.ok(users.get(index));
+    }
+
+    @GetMapping("users") //curl localhost:8080/users
+    public ResponseEntity<List<User>> getUsers(){
+        return ResponseEntity.ok(users);
+    }
+
+    @PutMapping("users/{index}")//curl -X PUT localhost:8080/users/0 -H "Content-Type: application/json" -d 12
+    public ResponseEntity<Void> changeAge(@PathVariable("index") Integer index, @RequestBody Integer age){
+        users.get(index).setAge(age);
         return ResponseEntity.accepted().build();
     }
 }
